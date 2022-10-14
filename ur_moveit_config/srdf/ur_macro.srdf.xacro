@@ -17,6 +17,12 @@
     
     <group name="${prefix}gripper">
       <chain base_link="${prefix}robotiq_85_base_link" tip_link="${prefix}robotiq_85_left_knuckle_link" />
+      <link name="${prefix}robotiq_85_base_link"/>
+      <link name="${prefix}robotiq_85_left_knuckle_link"/>
+      <link name="${prefix}robotiq_85_right_knuckle_link"/>
+      <joint name="${prefix}robotiq_85_left_knuckle_joint"/>
+      <joint name="${prefix}robotiq_85_right_knuckle_joint"/>
+      
     </group>
     
     <group name="${prefix}arm_gripper">
@@ -31,7 +37,7 @@
     </group_state>
     
     <group_state name="${prefix}close" group="${prefix}gripper">
-      <joint name="${prefix}robotiq_85_left_knuckle_joint" value="8.0" />
+      <joint name="${prefix}robotiq_85_left_knuckle_joint" value="0.8" />
     </group_state>
     
     <group_state name="${prefix}home" group="${prefix}${name}_manipulator">
