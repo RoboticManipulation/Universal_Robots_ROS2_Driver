@@ -328,6 +328,13 @@ def launch_setup(context, *args, **kwargs):
         arguments=[initial_joint_controller, "-c", "/controller_manager", "--stopped"],
         condition=UnlessCondition(activate_joint_controller),
     )
+    
+    
+    gripper_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_controller", "-c", "/controller_manager"],
+    )
 
     nodes_to_start = [
         control_node,
@@ -344,6 +351,7 @@ def launch_setup(context, *args, **kwargs):
         forward_position_controller_spawner_stopped,
         initial_joint_controller_spawner_stopped,
         initial_joint_controller_spawner_started,
+        gripper_controller_spawner,
     ]
 
     return nodes_to_start
