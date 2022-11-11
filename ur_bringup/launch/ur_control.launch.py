@@ -37,6 +37,10 @@ from launch.substitutions import Command, FindExecutable, LaunchConfiguration, P
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+import launch
+import launch_ros
+import os
+
 
 def launch_setup(context, *args, **kwargs):
 
@@ -329,12 +333,19 @@ def launch_setup(context, *args, **kwargs):
         condition=UnlessCondition(activate_joint_controller),
     )
     
-    
-    gripper_controller_spawner = Node(
+    robotiq_gripper_controller_spawner = launch_ros.actions.Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["gripper_controller", "-c", "/controller_manager"],
+        arguments=["robotiq_gripper_controller", "-c", "/controller_manager"],
     )
+
+    robotiq_activation_controller_spawner = launch_ros.actions.Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["robotiq_activation_controller", "-c", "/controller_manager"],
+    )
+    
+ 
 
     nodes_to_start = [
         control_node,
@@ -351,7 +362,8 @@ def launch_setup(context, *args, **kwargs):
         forward_position_controller_spawner_stopped,
         initial_joint_controller_spawner_stopped,
         initial_joint_controller_spawner_started,
-        gripper_controller_spawner,
+        robotiq_gripper_controller_spawner,
+        robotiq_activation_controller_spawner,
     ]
 
     return nodes_to_start

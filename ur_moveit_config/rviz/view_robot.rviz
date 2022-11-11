@@ -183,7 +183,7 @@ Visualization Manager:
         Interactive Marker Size: 0
         Joint Violation Color: 255; 0; 255
         Planning Group: ur_manipulator
-        Query Goal State: false
+        Query Goal State: true
         Query Start State: false
         Show Workspace: false
         Start State Alpha: 1
@@ -371,6 +371,25 @@ Visualization Manager:
           Value: false
         wrist_3_link:
           Value: false
+        robotiq_85_base_link:
+          Value: false
+        robotiq_85_left_finger_link:
+          Value: false
+        robotiq_85_left_finger_tip_link:
+          Value: false
+        robotiq_85_left_knuckle_link:
+          Value: false
+        robotiq_85_left_inner_knuckle_link:
+          Value: false
+        robotiq_85_right_finger_link:
+          Value: false
+        robotiq_85_right_finger_tip_link:
+          Value: false
+        robotiq_85_right_knuckle_link:
+          Value: false
+        robotiq_85_right_inner_knuckle_link:
+          Value: false
+
       Marker Scale: 1
       Name: TF
       Show Arrows: true

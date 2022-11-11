@@ -2,6 +2,8 @@ controller_names:
   - scaled_joint_trajectory_controller
   - joint_trajectory_controller
   - gripper_controller
+  - robotiq_gripper_controller
+
 
 
 scaled_joint_trajectory_controller:
@@ -29,10 +31,10 @@ joint_trajectory_controller:
     - wrist_2_joint
     - wrist_3_joint
     
-gripper_controller:
-   action_ns: gripper_cmd
-   type: GripperCommand
-   default: false
-   joints:
-     - robotiq_85_left_knuckle_joint
+robotiq_gripper_controller:
+    action_ns: gripper_cmd
+    type: GripperCommand
+    default: false
+    joints:
+      - robotiq_85_left_knuckle_joint
      
