@@ -72,6 +72,7 @@ def launch_setup(context, *args, **kwargs):
     tool_device_name = LaunchConfiguration("tool_device_name")
     tool_tcp_port = LaunchConfiguration("tool_tcp_port")
     tool_voltage = LaunchConfiguration("tool_voltage")
+    use_gripper = LaunchConfiguration("use_gripper")
 
     joint_limit_params = PathJoinSubstitution(
         [FindPackageShare(description_package), "config", ur_type, "joint_limits.yaml"]
@@ -175,6 +176,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "tool_voltage:=",
             tool_voltage,
+            " ",
+            "use_gripper:=",
+            use_gripper,
             " ",
         ]
     )
@@ -337,12 +341,14 @@ def launch_setup(context, *args, **kwargs):
         package="controller_manager",
         executable="spawner",
         arguments=["robotiq_gripper_controller", "-c", "/controller_manager"],
+        condition=IfCondition(use_gripper),
     )
 
     robotiq_activation_controller_spawner = launch_ros.actions.Node(
         package="controller_manager",
         executable="spawner",
         arguments=["robotiq_activation_controller", "-c", "/controller_manager"],
+        condition=IfCondition(use_gripper),
     )
     
  
@@ -558,6 +564,13 @@ def generate_launch_description():
             "tool_voltage",
             default_value="24",
             description="Tool voltage that will be setup.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_gripper",
+            default_value="true",
+            description="Start the gripper and the UR.",
         )
     )
 
