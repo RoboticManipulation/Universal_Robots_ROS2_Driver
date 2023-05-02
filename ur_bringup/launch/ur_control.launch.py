@@ -37,6 +37,10 @@ from launch.substitutions import Command, FindExecutable, LaunchConfiguration, P
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+import launch
+import launch_ros
+import os
+
 
 def launch_setup(context, *args, **kwargs):
 
@@ -68,6 +72,7 @@ def launch_setup(context, *args, **kwargs):
     tool_device_name = LaunchConfiguration("tool_device_name")
     tool_tcp_port = LaunchConfiguration("tool_tcp_port")
     tool_voltage = LaunchConfiguration("tool_voltage")
+    use_gripper = LaunchConfiguration("use_gripper")
 
     joint_limit_params = PathJoinSubstitution(
         [FindPackageShare(description_package), "config", ur_type, "joint_limits.yaml"]
@@ -171,6 +176,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "tool_voltage:=",
             tool_voltage,
+            " ",
+            "use_gripper:=",
+            use_gripper,
             " ",
         ]
     )
@@ -322,6 +330,22 @@ def launch_setup(context, *args, **kwargs):
         arguments=[initial_joint_controller, "-c", "/controller_manager", "--stopped"],
         condition=UnlessCondition(activate_joint_controller),
     )
+    
+    robotiq_gripper_controller_spawner = launch_ros.actions.Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["robotiq_gripper_controller", "-c", "/controller_manager"],
+        condition=IfCondition(use_gripper),
+    )
+
+    robotiq_activation_controller_spawner = launch_ros.actions.Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["robotiq_activation_controller", "-c", "/controller_manager"],
+        condition=IfCondition(use_gripper),
+    )
+    
+ 
 
     nodes_to_start = [
         control_node,
@@ -338,6 +362,8 @@ def launch_setup(context, *args, **kwargs):
         forward_position_controller_spawner_stopped,
         initial_joint_controller_spawner_stopped,
         initial_joint_controller_spawner_started,
+        robotiq_gripper_controller_spawner,
+        robotiq_activation_controller_spawner,
     ]
 
     return nodes_to_start
@@ -452,7 +478,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "initial_joint_controller",
-            default_value="scaled_joint_trajectory_controller",
+            default_value="joint_trajectory_controller",
             description="Initially loaded robot controller.",
         )
     )
@@ -540,6 +566,13 @@ def generate_launch_description():
             "tool_voltage",
             default_value="24",
             description="Tool voltage that will be setup.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_gripper",
+            default_value="true",
+            description="Start the gripper and the UR.",
         )
     )
 

@@ -4,10 +4,22 @@
   <!-- robot name parameter -->
   <xacro:arg name="name" default="ur"/>
   <!-- parameters -->
-  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="prefix" default=""/>
+  <!-- Flag to use the Gripper or just the UR5  -->
+  <xacro:arg name="use_gripper" default="true" />
 
   <xacro:include filename="$(find ur_moveit_config)/srdf/ur_macro.srdf.xacro"/>
 
-  <xacro:ur_srdf name="$(arg name)" prefix="$(arg prefix)"/>
+  <xacro:if value="$(arg use_gripper)">
+  <xacro:include filename="$(find ur_moveit_config)/srdf/robotiq_85_gripper.srdf.xacro"/>
+  </xacro:if>  
+
+
+  <xacro:ur_srdf name="$(arg name)" prefix="$(arg prefix)" use_gripper="$(arg use_gripper)"/>
+
+  <xacro:if value="$(arg use_gripper)">
+  <disable_collisions link1="$(arg prefix)robotiq_85_base_link" link2="$(arg prefix)tool0" reason="Adjacent" />
+  <disable_collisions link1="$(arg prefix)robotiq_85_base_link" link2="$(arg prefix)wrist_3_link" reason="Never" />
+  </xacro:if>
 
 </robot>

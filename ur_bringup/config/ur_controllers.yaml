@@ -23,6 +23,12 @@ controller_manager:
 
     forward_position_controller:
       type: position_controllers/JointGroupPositionController
+      
+    robotiq_gripper_controller:
+      type: position_controllers/GripperActionController
+      
+    robotiq_activation_controller:
+      type: robotiq_controllers/RobotiqActivationController
 
 
 speed_scaling_state_broadcaster:
@@ -119,3 +125,15 @@ forward_position_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
+
+robotiq_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: robotiq_85_left_knuckle_joint
+      
+robotiq_activation_controller:
+  ros__parameters:
+    default: true
+
+      
+

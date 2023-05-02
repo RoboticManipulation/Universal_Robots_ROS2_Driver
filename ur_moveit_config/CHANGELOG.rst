@@ -35,6 +35,14 @@ Changelog for package ur_moveit_config
 * Prepare for humble (`#394 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/394>`_)
 * Update dependencies on all packages (`#391 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/391>`_)
 * Replace warehouse_ros_mongo with warehouse_ros_sqlite (`#362 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/362>`_)
+2.1.1 (2022-05-05)
+------------------
+* Remove non-required dependency from CMakeLists
+* Contributors: Felix Exner
+
+2.1.0 (2022-05-03)
+------------------
+* Updated package maintainers (`#360 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/360>`_)
 * Add missing dep to warehouse_ros_mongo (`#352 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/352>`_)
 * Update license to BSD-3-Clause (`#277 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/277>`_)
 * Correct loading kinematics parameters from yaml (`#308 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/308>`_)
@@ -47,4 +55,8 @@ Changelog for package ur_moveit_config
 * Remove obsolete and unused files and packages. (`#80 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/80>`_)
 * Review CI by correcting the configurations (`#71 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/71>`_)
 * Add support for gpios, update MoveIt and ros2_control launching (`#66 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/66>`_)
+<<<<<<< HEAD
 * Contributors: AndyZe, Denis Štogl, Felix Exner, livanov93, Robert Wilbrandt
+=======
+* Contributors: AndyZe, Denis Štogl, Felix Exner, livanov93
+>>>>>>> origin/real_robot_controller

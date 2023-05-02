@@ -59,6 +59,7 @@ def launch_setup(context, *args, **kwargs):
     use_sim_time = LaunchConfiguration("use_sim_time")
     launch_rviz = LaunchConfiguration("launch_rviz")
     launch_servo = LaunchConfiguration("launch_servo")
+    use_gripper = LaunchConfiguration("use_gripper")
 
     joint_limit_params = PathJoinSubstitution(
         [FindPackageShare(description_package), "config", ur_type, "joint_limits.yaml"]
@@ -117,6 +118,9 @@ def launch_setup(context, *args, **kwargs):
             "prefix:=",
             prefix,
             " ",
+            "use_gripper:=",
+            use_gripper,
+            " ",
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -137,6 +141,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "prefix:=",
             prefix,
+            " ",
+            "use_gripper:=",
+            use_gripper,
             " ",
         ]
     )
@@ -344,6 +351,13 @@ def generate_launch_description():
             description="Prefix of the joint names, useful for \
         multi-robot setup. If changed than also joint names in the controllers' configuration \
         have to be updated.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_gripper",
+            default_value="true",
+            description="Start the gripper and the UR.",
         )
     )
     declared_arguments.append(
