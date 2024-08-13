@@ -19,6 +19,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(backward_ros REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -103,8 +104,13 @@ add_executable(controller_stopper_node
 )
 ament_target_dependencies(controller_stopper_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
+add_executable(urscript_interface
+  src/urscript_interface.cpp
+)
+ament_target_dependencies(urscript_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
 install(
-  TARGETS dashboard_client ur_ros2_control_node controller_stopper_node
+  TARGETS dashboard_client ur_ros2_control_node controller_stopper_node urscript_interface
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -174,11 +180,19 @@ if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake)
 
   if(${UR_ROBOT_DRIVER_BUILD_INTEGRATION_TESTS})
+    add_launch_test(test/launch_args.py
+      TIMEOUT
+        180
+    )
     add_launch_test(test/dashboard_client.py
       TIMEOUT
         180
     )
     add_launch_test(test/robot_driver.py
+      TIMEOUT
+        800
+    )
+    add_launch_test(test/urscript_interface.py
       TIMEOUT
         500
     )

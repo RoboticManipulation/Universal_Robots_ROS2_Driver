@@ -54,6 +54,14 @@ namespace rtde = urcl::rtde_interface;
 
 namespace ur_robot_driver
 {
+
+URPositionHardwareInterface::~URPositionHardwareInterface()
+{
+  // If the controller manager is shutdown via Ctrl + C the on_deactivate methods won't be called.
+  // We therefore need to make sure to actually deactivate the communication
+  on_cleanup(rclcpp_lifecycle::State());
+}
+
 hardware_interface::CallbackReturn
 URPositionHardwareInterface::on_init(const hardware_interface::HardwareInfo& system_info)
 {
@@ -153,8 +161,12 @@ std::vector<hardware_interface::StateInterface> URPositionHardwareInterface::exp
         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &urcl_joint_efforts_[i]));
   }
 
-  state_interfaces.emplace_back(
-      hardware_interface::StateInterface("speed_scaling", "speed_scaling_factor", &speed_scaling_combined_));
+  // Obtain the tf_prefix from the urdf so that we can have the general interface multiple times
+  // NOTE using the tf_prefix at this point is some kind of workaround. One should actually go through the list of gpio
+  // state interface in info_ and match them accordingly
+  const std::string tf_prefix = info_.hardware_parameters.at("tf_prefix");
+  state_interfaces.emplace_back(hardware_interface::StateInterface(tf_prefix + "speed_scaling", "speed_scaling_factor",
+                                                                   &speed_scaling_combined_));
 
   for (auto& sensor : info_.sensors) {
     for (uint j = 0; j < sensor.state_interfaces.size(); ++j) {
@@ -164,57 +176,60 @@ std::vector<hardware_interface::StateInterface> URPositionHardwareInterface::exp
   }
 
   for (size_t i = 0; i < 18; ++i) {
-    state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "digital_output_" + std::to_string(i),
-                                                                     &actual_dig_out_bits_copy_[i]));
-    state_interfaces.emplace_back(
-        hardware_interface::StateInterface("gpio", "digital_input_" + std::to_string(i), &actual_dig_in_bits_copy_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "digital_output_" + std::to_string(i), &actual_dig_out_bits_copy_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "digital_input_" + std::to_string(i), &actual_dig_in_bits_copy_[i]));
   }
 
   for (size_t i = 0; i < 11; ++i) {
-    state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "safety_status_bit_" + std::to_string(i),
-                                                                     &safety_status_bits_copy_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "safety_status_bit_" + std::to_string(i), &safety_status_bits_copy_[i]));
   }
 
   for (size_t i = 0; i < 4; ++i) {
-    state_interfaces.emplace_back(
-        hardware_interface::StateInterface("gpio", "analog_io_type_" + std::to_string(i), &analog_io_types_copy_[i]));
-    state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "robot_status_bit_" + std::to_string(i),
-                                                                     &robot_status_bits_copy_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "analog_io_type_" + std::to_string(i), &analog_io_types_copy_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "robot_status_bit_" + std::to_string(i), &robot_status_bits_copy_[i]));
   }
 
   for (size_t i = 0; i < 2; ++i) {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        "gpio", "tool_analog_input_type_" + std::to_string(i), &tool_analog_input_types_copy_[i]));
-
-    state_interfaces.emplace_back(
-        hardware_interface::StateInterface("gpio", "tool_analog_input_" + std::to_string(i), &tool_analog_input_[i]));
+        tf_prefix + "gpio", "tool_analog_input_type_" + std::to_string(i), &tool_analog_input_types_copy_[i]));
 
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        "gpio", "standard_analog_input_" + std::to_string(i), &standard_analog_input_[i]));
+        tf_prefix + "gpio", "tool_analog_input_" + std::to_string(i), &tool_analog_input_[i]));
 
     state_interfaces.emplace_back(hardware_interface::StateInterface(
-        "gpio", "standard_analog_output_" + std::to_string(i), &standard_analog_output_[i]));
+        tf_prefix + "gpio", "standard_analog_input_" + std::to_string(i), &standard_analog_input_[i]));
+
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+        tf_prefix + "gpio", "standard_analog_output_" + std::to_string(i), &standard_analog_output_[i]));
   }
 
   state_interfaces.emplace_back(
-      hardware_interface::StateInterface("gpio", "tool_output_voltage", &tool_output_voltage_copy_));
-
-  state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "robot_mode", &robot_mode_copy_));
-
-  state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "safety_mode", &safety_mode_copy_));
-
-  state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "tool_mode", &tool_mode_copy_));
+      hardware_interface::StateInterface(tf_prefix + "gpio", "tool_output_voltage", &tool_output_voltage_copy_));
 
   state_interfaces.emplace_back(
-      hardware_interface::StateInterface("gpio", "tool_output_current", &tool_output_current_));
-
-  state_interfaces.emplace_back(hardware_interface::StateInterface("gpio", "tool_temperature", &tool_temperature_));
+      hardware_interface::StateInterface(tf_prefix + "gpio", "robot_mode", &robot_mode_copy_));
 
   state_interfaces.emplace_back(
-      hardware_interface::StateInterface("system_interface", "initialized", &system_interface_initialized_));
+      hardware_interface::StateInterface(tf_prefix + "gpio", "safety_mode", &safety_mode_copy_));
+
+  state_interfaces.emplace_back(hardware_interface::StateInterface(tf_prefix + "gpio", "tool_mode", &tool_mode_copy_));
 
   state_interfaces.emplace_back(
-      hardware_interface::StateInterface("gpio", "program_running", &robot_program_running_copy_));
+      hardware_interface::StateInterface(tf_prefix + "gpio", "tool_output_current", &tool_output_current_));
+
+  state_interfaces.emplace_back(
+      hardware_interface::StateInterface(tf_prefix + "gpio", "tool_temperature", &tool_temperature_));
+
+  state_interfaces.emplace_back(hardware_interface::StateInterface(tf_prefix + "system_interface", "initialized",
+                                                                   &system_interface_initialized_));
+
+  state_interfaces.emplace_back(
+      hardware_interface::StateInterface(tf_prefix + "gpio", "program_running", &robot_program_running_copy_));
 
   return state_interfaces;
 }
@@ -229,172 +244,183 @@ std::vector<hardware_interface::CommandInterface> URPositionHardwareInterface::e
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
         info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &urcl_velocity_commands_[i]));
   }
-
-  command_interfaces.emplace_back(hardware_interface::CommandInterface("gpio", "io_async_success", &io_async_success_));
+  // Obtain the tf_prefix from the urdf so that we can have the general interface multiple times
+  // NOTE using the tf_prefix at this point is some kind of workaround. One should actually go through the list of gpio
+  // command interface in info_ and match them accordingly
+  const std::string tf_prefix = info_.hardware_parameters.at("tf_prefix");
 
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("speed_scaling", "target_speed_fraction_cmd", &target_speed_fraction_cmd_));
+      hardware_interface::CommandInterface(tf_prefix + "gpio", "io_async_success", &io_async_success_));
 
   command_interfaces.emplace_back(hardware_interface::CommandInterface(
-      "speed_scaling", "target_speed_fraction_async_success", &scaling_async_success_));
+      tf_prefix + "speed_scaling", "target_speed_fraction_cmd", &target_speed_fraction_cmd_));
 
   command_interfaces.emplace_back(hardware_interface::CommandInterface(
-      "resend_robot_program", "resend_robot_program_cmd", &resend_robot_program_cmd_));
+      tf_prefix + "speed_scaling", "target_speed_fraction_async_success", &scaling_async_success_));
 
   command_interfaces.emplace_back(hardware_interface::CommandInterface(
-      "resend_robot_program", "resend_robot_program_async_success", &resend_robot_program_async_success_));
+      tf_prefix + "resend_robot_program", "resend_robot_program_cmd", &resend_robot_program_cmd_));
 
-  command_interfaces.emplace_back(hardware_interface::CommandInterface("payload", "mass", &payload_mass_));
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      tf_prefix + "resend_robot_program", "resend_robot_program_async_success", &resend_robot_program_async_success_));
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      tf_prefix + "hand_back_control", "hand_back_control_cmd", &hand_back_control_cmd_));
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      tf_prefix + "hand_back_control", "hand_back_control_async_success", &hand_back_control_async_success_));
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(tf_prefix + "payload", "mass", &payload_mass_));
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("payload", "cog.x", &payload_center_of_gravity_[0]));
+      hardware_interface::CommandInterface(tf_prefix + "payload", "cog.x", &payload_center_of_gravity_[0]));
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("payload", "cog.y", &payload_center_of_gravity_[1]));
+      hardware_interface::CommandInterface(tf_prefix + "payload", "cog.y", &payload_center_of_gravity_[1]));
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("payload", "cog.z", &payload_center_of_gravity_[2]));
+      hardware_interface::CommandInterface(tf_prefix + "payload", "cog.z", &payload_center_of_gravity_[2]));
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("payload", "payload_async_success", &payload_async_success_));
+      hardware_interface::CommandInterface(tf_prefix + "payload", "payload_async_success", &payload_async_success_));
 
   for (size_t i = 0; i < 18; ++i) {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        "gpio", "standard_digital_output_cmd_" + std::to_string(i), &standard_dig_out_bits_cmd_[i]));
+        tf_prefix + "gpio", "standard_digital_output_cmd_" + std::to_string(i), &standard_dig_out_bits_cmd_[i]));
   }
 
   for (size_t i = 0; i < 2; ++i) {
     command_interfaces.emplace_back(hardware_interface::CommandInterface(
-        "gpio", "standard_analog_output_cmd_" + std::to_string(i), &standard_analog_output_cmd_[i]));
+        tf_prefix + "gpio", "standard_analog_output_cmd_" + std::to_string(i), &standard_analog_output_cmd_[i]));
   }
 
-  command_interfaces.emplace_back(hardware_interface::CommandInterface("gpio", "tool_voltage_cmd", &tool_voltage_cmd_));
+  command_interfaces.emplace_back(
+      hardware_interface::CommandInterface(tf_prefix + "gpio", "tool_voltage_cmd", &tool_voltage_cmd_));
 
   command_interfaces.emplace_back(
-      hardware_interface::CommandInterface("zero_ftsensor", "zero_ftsensor_cmd", &zero_ftsensor_cmd_));
+      hardware_interface::CommandInterface(tf_prefix + "zero_ftsensor", "zero_ftsensor_cmd", &zero_ftsensor_cmd_));
 
-  command_interfaces.emplace_back(hardware_interface::CommandInterface("zero_ftsensor", "zero_ftsensor_async_success",
-                                                                       &zero_ftsensor_async_success_));
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      tf_prefix + "zero_ftsensor", "zero_ftsensor_async_success", &zero_ftsensor_async_success_));
 
   return command_interfaces;
 }
 
 hardware_interface::CallbackReturn
-URPositionHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous_state)
+URPositionHardwareInterface::on_configure(const rclcpp_lifecycle::State& previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "Starting ...please wait...");
 
   // The robot's IP address.
-  std::string robot_ip = info_.hardware_parameters["robot_ip"];
+  const std::string robot_ip = info_.hardware_parameters["robot_ip"];
   // Path to the urscript code that will be sent to the robot
-  std::string script_filename = info_.hardware_parameters["script_filename"];
+  const std::string script_filename = info_.hardware_parameters["script_filename"];
   // Path to the file containing the recipe used for requesting RTDE outputs.
-  std::string output_recipe_filename = info_.hardware_parameters["output_recipe_filename"];
+  const std::string output_recipe_filename = info_.hardware_parameters["output_recipe_filename"];
   // Path to the file containing the recipe used for requesting RTDE inputs.
-  std::string input_recipe_filename = info_.hardware_parameters["input_recipe_filename"];
+  const std::string input_recipe_filename = info_.hardware_parameters["input_recipe_filename"];
   // Start robot in headless mode. This does not require the 'External Control' URCap to be running
   // on the robot, but this will send the URScript to the robot directly. On e-Series robots this
   // requires the robot to run in 'remote-control' mode.
-  bool headless_mode =
+  const bool headless_mode =
       (info_.hardware_parameters["headless_mode"] == "true") || (info_.hardware_parameters["headless_mode"] == "True");
   // Port that will be opened to communicate between the driver and the robot controller.
-  int reverse_port = stoi(info_.hardware_parameters["reverse_port"]);
+  const int reverse_port = stoi(info_.hardware_parameters["reverse_port"]);
   // The driver will offer an interface to receive the program's URScript on this port.
-  int script_sender_port = stoi(info_.hardware_parameters["script_sender_port"]);
-  // IP that will be used for the robot controller to communicate back to the driver.
+  const int script_sender_port = stoi(info_.hardware_parameters["script_sender_port"]);
+
+  // The ip address of the host the driver runs on
   std::string reverse_ip = info_.hardware_parameters["reverse_ip"];
   if (reverse_ip == "0.0.0.0") {
     reverse_ip = "";
   }
-  // Port that will be opened to send trajectory points from the driver to the robot. Note: this feature hasn't been
-  // implemented in ROS2
-  int trajectory_port = 50003;
-  // Port that will be opened to forward script commands from the driver to the robot
-  int script_command_port = stoi(info_.hardware_parameters["script_command_port"]);
-  //  std::string tf_prefix = info_.hardware_parameters["tf_prefix"];
-  //  std::string tf_prefix;
+
+  // Port (on the host pc) of the trajectory interface
+  const int trajectory_port = stoi(info_.hardware_parameters["trajectory_port"]);
+
+  // Port (on the host PC) that will be used to forward script commands from the driver to the robot
+  const int script_command_port = stoi(info_.hardware_parameters["script_command_port"]);
 
   // Enables non_blocking_read mode. Should only be used with combined_robot_hw. Disables error generated when read
   // returns without any data, sets the read timeout to zero, and synchronises read/write operations. Enabling this when
   // not used with combined_robot_hw can suppress important errors and affect real-time performance.
-  non_blocking_read_ = static_cast<bool>(stoi(info_.hardware_parameters["non_blocking_read"]));
+  non_blocking_read_ = (info_.hardware_parameters["non_blocking_read"] == "true") ||
+                       (info_.hardware_parameters["non_blocking_read"] == "True");
 
   // Specify gain for servoing to position in joint space.
   // A higher gain can sharpen the trajectory.
-  int servoj_gain = stoi(info_.hardware_parameters["servoj_gain"]);
+  const int servoj_gain = stoi(info_.hardware_parameters["servoj_gain"]);
   // Specify lookahead time for servoing to position in joint space.
   // A longer lookahead time can smooth the trajectory.
-  double servoj_lookahead_time = stod(info_.hardware_parameters["servoj_lookahead_time"]);
+  const double servoj_lookahead_time = stod(info_.hardware_parameters["servoj_lookahead_time"]);
 
-  bool use_tool_communication = (info_.hardware_parameters["use_tool_communication"] == "true") ||
-                                (info_.hardware_parameters["use_tool_communication"] == "True");
+  const bool use_tool_communication = (info_.hardware_parameters["use_tool_communication"] == "true") ||
+                                      (info_.hardware_parameters["use_tool_communication"] == "True");
 
   // Hash of the calibration reported by the robot. This is used for validating the robot
   // description is using the correct calibration. If the robot's calibration doesn't match this
   // hash, an error will be printed. You can use the robot as usual, however Cartesian poses of the
   // endeffector might be inaccurate. See the "ur_calibration" package on help how to generate your
   // own hash matching your actual robot.
-  std::string calibration_checksum = info_.hardware_parameters["kinematics/hash"];
+  const std::string calibration_checksum = info_.hardware_parameters["kinematics/hash"];
 
   std::unique_ptr<urcl::ToolCommSetup> tool_comm_setup;
   if (use_tool_communication) {
     tool_comm_setup = std::make_unique<urcl::ToolCommSetup>();
 
     using ToolVoltageT = std::underlying_type<urcl::ToolVoltage>::type;
-    ToolVoltageT tool_voltage;
+
     // Tool voltage that will be set as soon as the UR-Program on the robot is started. Note: This
     // parameter is only evaluated, when the parameter "use_tool_communication" is set to TRUE.
     // Then, this parameter is required.}
-    tool_voltage = std::stoi(info_.hardware_parameters["tool_voltage"]);
-
+    const ToolVoltageT tool_voltage = std::stoi(info_.hardware_parameters["tool_voltage"]);
     tool_comm_setup->setToolVoltage(static_cast<urcl::ToolVoltage>(tool_voltage));
 
     using ParityT = std::underlying_type<urcl::Parity>::type;
-    ParityT parity;
+
     // Parity used for tool communication. Will be set as soon as the UR-Program on the robot is
     // started. Can be 0 (None), 1 (odd) and 2 (even).
     //
     // Note: This parameter is only evaluated, when the parameter "use_tool_communication"
     // is set to TRUE.  Then, this parameter is required.
-    parity = std::stoi(info_.hardware_parameters["tool_parity"]);
+    const ParityT parity = std::stoi(info_.hardware_parameters["tool_parity"]);
     tool_comm_setup->setParity(static_cast<urcl::Parity>(parity));
 
-    int baud_rate;
     // Baud rate used for tool communication. Will be set as soon as the UR-Program on the robot is
     // started. See UR documentation for valid baud rates.
     //
     // Note: This parameter is only evaluated, when the parameter "use_tool_communication"
     // is set to TRUE.  Then, this parameter is required.
-    baud_rate = std::stoi(info_.hardware_parameters["tool_baud_rate"]);
+    const int baud_rate = std::stoi(info_.hardware_parameters["tool_baud_rate"]);
     tool_comm_setup->setBaudRate(static_cast<uint32_t>(baud_rate));
 
-    int stop_bits;
     // Number of stop bits used for tool communication. Will be set as soon as the UR-Program on the robot is
     // started. Can be 1 or 2.
     //
     // Note: This parameter is only evaluated, when the parameter "use_tool_communication"
     // is set to TRUE.  Then, this parameter is required.
-    stop_bits = std::stoi(info_.hardware_parameters["tool_stop_bits"]);
+    const int stop_bits = std::stoi(info_.hardware_parameters["tool_stop_bits"]);
     tool_comm_setup->setStopBits(static_cast<uint32_t>(stop_bits));
 
-    int rx_idle_chars;
     // Number of idle chars for the RX unit used for tool communication. Will be set as soon as the UR-Program on the
     // robot is started. Valid values: min=1.0, max=40.0
     //
     // Note: This parameter is only evaluated, when the parameter "use_tool_communication"
     // is set to TRUE.  Then, this parameter is required.
-    rx_idle_chars = std::stoi(info_.hardware_parameters["tool_rx_idle_chars"]);
+    const int rx_idle_chars = std::stoi(info_.hardware_parameters["tool_rx_idle_chars"]);
     tool_comm_setup->setRxIdleChars(rx_idle_chars);
 
-    int tx_idle_chars;
     // Number of idle chars for the TX unit used for tool communication. Will be set as soon as the UR-Program on the
     // robot is started. Valid values: min=0.0, max=40.0
     //
     // Note: This parameter is only evaluated, when the parameter "use_tool_communication"
     // is set to TRUE.  Then, this parameter is required.
-    tx_idle_chars = std::stoi(info_.hardware_parameters["tool_tx_idle_chars"]);
+    const int tx_idle_chars = std::stoi(info_.hardware_parameters["tool_tx_idle_chars"]);
     tool_comm_setup->setTxIdleChars(tx_idle_chars);
   }
 
+  // Obtain the tf_prefix which is needed for the logging handler so that log messages from different arms are
+  // distiguishable in the log
+  const std::string tf_prefix = info_.hardware_parameters.at("tf_prefix");
   RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "Initializing driver...");
-  registerUrclLogHandler();
+  registerUrclLogHandler(tf_prefix);
   try {
+    rtde_comm_has_been_started_ = false;
     ur_driver_ = std::make_unique<urcl::UrDriver>(
         robot_ip, script_filename, output_recipe_filename, input_recipe_filename,
         std::bind(&URPositionHardwareInterface::handleRobotProgramState, this, std::placeholders::_1), headless_mode,
@@ -408,6 +434,9 @@ URPositionHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous
     RCLCPP_FATAL_STREAM(rclcpp::get_logger("URPositionHardwareInterface"), e.what());
     return hardware_interface::CallbackReturn::ERROR;
   }
+  // Timeout before the reverse interface will be dropped by the robot
+  receive_timeout_ = urcl::RobotReceiveTimeout::millisec(std::stoi(info_.hardware_parameters["keep_alive_count"]) * 20);
+
   RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "Calibration checksum: '%s'.",
               calibration_checksum.c_str());
   // check calibration
@@ -425,8 +454,6 @@ URPositionHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous
                         "README.md] for details.");
   }
 
-  ur_driver_->startRTDECommunication();
-
   async_thread_ = std::make_shared<std::thread>(&URPositionHardwareInterface::asyncThread, this);
 
   RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "System successfully started!");
@@ -435,13 +462,22 @@ URPositionHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous
 }
 
 hardware_interface::CallbackReturn
-URPositionHardwareInterface::on_deactivate(const rclcpp_lifecycle::State& previous_state)
+URPositionHardwareInterface::on_activate(const rclcpp_lifecycle::State& previous_state)
+{
+  RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "Activating HW interface");
+  return hardware_interface::CallbackReturn::SUCCESS;
+}
+
+hardware_interface::CallbackReturn
+URPositionHardwareInterface::on_cleanup(const rclcpp_lifecycle::State& previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("URPositionHardwareInterface"), "Stopping ...please wait...");
 
-  async_thread_shutdown_ = true;
-  async_thread_->join();
-  async_thread_.reset();
+  if (async_thread_) {
+    async_thread_shutdown_ = true;
+    async_thread_->join();
+    async_thread_.reset();
+  }
 
   ur_driver_.reset();
 
@@ -488,6 +524,12 @@ void URPositionHardwareInterface::asyncThread()
 hardware_interface::return_type URPositionHardwareInterface::read(const rclcpp::Time& time,
                                                                   const rclcpp::Duration& period)
 {
+  // We want to start the rtde comm the latest point possible due to the delay times arising from setting up the
+  // communication with multiple arms
+  if (!rtde_comm_has_been_started_) {
+    ur_driver_->startRTDECommunication();
+    rtde_comm_has_been_started_ = true;
+  }
   std::unique_ptr<rtde::DataPackage> data_pkg = ur_driver_->getDataPackage();
 
   if (data_pkg) {
@@ -560,6 +602,7 @@ hardware_interface::return_type URPositionHardwareInterface::read(const rclcpp::
       target_speed_fraction_cmd_ = NO_NEW_CMD_;
       resend_robot_program_cmd_ = NO_NEW_CMD_;
       zero_ftsensor_cmd_ = NO_NEW_CMD_;
+      hand_back_control_cmd_ = NO_NEW_CMD_;
       initialized_ = true;
     }
 
@@ -567,8 +610,8 @@ hardware_interface::return_type URPositionHardwareInterface::read(const rclcpp::
 
     return hardware_interface::return_type::OK;
   }
-
-  RCLCPP_ERROR(rclcpp::get_logger("URPositionHardwareInterface"), "Unable to read from hardware...");
+  if (!non_blocking_read_)
+    RCLCPP_ERROR(rclcpp::get_logger("URPositionHardwareInterface"), "Unable to read from hardware...");
   // TODO(anyone): could not read from the driver --> return ERROR --> on error will be called
   return hardware_interface::return_type::OK;
 }
@@ -583,10 +626,10 @@ hardware_interface::return_type URPositionHardwareInterface::write(const rclcpp:
        runtime_state_ == static_cast<uint32_t>(rtde::RUNTIME_STATE::PAUSING)) &&
       robot_program_running_ && (!non_blocking_read_ || packet_read_)) {
     if (position_controller_running_) {
-      ur_driver_->writeJointCommand(urcl_position_commands_, urcl::comm::ControlMode::MODE_SERVOJ);
+      ur_driver_->writeJointCommand(urcl_position_commands_, urcl::comm::ControlMode::MODE_SERVOJ, receive_timeout_);
 
     } else if (velocity_controller_running_) {
-      ur_driver_->writeJointCommand(urcl_velocity_commands_, urcl::comm::ControlMode::MODE_SPEEDJ);
+      ur_driver_->writeJointCommand(urcl_velocity_commands_, urcl::comm::ControlMode::MODE_SPEEDJ, receive_timeout_);
 
     } else {
       ur_driver_->writeKeepalive();
@@ -621,6 +664,9 @@ void URPositionHardwareInterface::initAsyncIO()
 
 void URPositionHardwareInterface::checkAsyncIO()
 {
+  if (!rtde_comm_has_been_started_) {
+    return;
+  }
   for (size_t i = 0; i < 18; ++i) {
     if (!std::isnan(standard_dig_out_bits_cmd_[i]) && ur_driver_ != nullptr) {
       if (i <= 7) {
@@ -661,6 +707,12 @@ void URPositionHardwareInterface::checkAsyncIO()
       RCLCPP_ERROR(rclcpp::get_logger("URPositionHardwareInterface"), "Service Call failed: '%s'", e.what());
     }
     resend_robot_program_cmd_ = NO_NEW_CMD_;
+  }
+
+  if (!std::isnan(hand_back_control_cmd_) && ur_driver_ != nullptr) {
+    robot_program_running_ = false;
+    hand_back_control_async_success_ = true;
+    hand_back_control_cmd_ = NO_NEW_CMD_;
   }
 
   if (!std::isnan(payload_mass_) && !std::isnan(payload_center_of_gravity_[0]) &&

@@ -2,6 +2,41 @@
 Changelog for package ur_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.2.15 (2024-07-26)
+-------------------
+
+2.2.14 (2024-07-01)
+-------------------
+
+2.2.13 (2024-06-17)
+-------------------
+* Simplify launch file for ur_bringup pkg (`#1004 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1004>`_)
+* Add calibration file to launch arguments (`#1001 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/1001>`_)
+* Contributors: Vincenzo Di Pentima
+
+2.2.12 (2024-05-16)
+-------------------
+
+2.2.11 (2024-04-08)
+-------------------
+
+2.2.10 (2024-01-03)
+-------------------
+
+2.2.9 (2023-09-22)
+------------------
+
+2.2.8 (2023-06-26)
+------------------
+
+2.2.7 (2023-06-02)
+------------------
+* Default path to ur_client_library urscript (`#316 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/316>`_) (`#553 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/553>`_)
+  * Change default path for urscript for headless mode.
+  * Replace urscript path also in newer ur_robot_driver launchfile
+* This commits adds additional configuration parameters needed for multiarm support.
+* Contributors: Lennart Nachtigall, mergify[bot], livanov93
+
 2.2.6 (2022-11-28)
 ------------------
 

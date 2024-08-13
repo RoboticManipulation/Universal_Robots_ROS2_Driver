@@ -2,6 +2,44 @@
 Changelog for package ur_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.2.15 (2024-07-26)
+-------------------
+
+2.2.14 (2024-07-01)
+-------------------
+
+2.2.13 (2024-06-17)
+-------------------
+* Add servo node config to disable advertising /get_planning_scene (backport of `#990 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/990>`_)
+* Contributors: Ruddick Lawrence
+
+2.2.12 (2024-05-16)
+-------------------
+* Define default maximum accelerations for MoveIt (backport of `#645 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/645>`_)
+* Fix multi-line strings in DeclareLaunchArgument (`#948 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/948>`_)
+* Contributors: Robert Wilbrandt, Matthijs van der Burgh
+
+2.2.11 (2024-04-08)
+-------------------
+* Add UR30 support (`#930 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/930>`_)
+* Contributors: Felix Exner, Vincenzo Di Pentima
+
+2.2.10 (2024-01-03)
+-------------------
+
+2.2.9 (2023-09-22)
+------------------
+* Added support for UR20 (`#805 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/805>`_)
+* Contributors: mergify[bot], Felix Exner
+
+2.2.8 (2023-06-26)
+------------------
+
+2.2.7 (2023-06-02)
+------------------
+* Update linters & checkers (backport `#426 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/426>`_) (`#556 <https://github.com/UniversalRobots/Universal_Robots_ROS2_Driver/issues/556>`_)
+* Contributors: mergify[bot], Felix Exner
+
 2.2.6 (2022-11-28)
 ------------------
 

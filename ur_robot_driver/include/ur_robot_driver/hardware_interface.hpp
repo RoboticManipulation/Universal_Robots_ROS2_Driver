@@ -53,6 +53,7 @@
 
 // UR stuff
 #include "ur_client_library/ur/ur_driver.h"
+#include "ur_client_library/ur/robot_receive_timeout.h"
 #include "ur_robot_driver/dashboard_client_ros.hpp"
 #include "ur_dashboard_msgs/msg/robot_mode.hpp"
 
@@ -88,6 +89,7 @@ class URPositionHardwareInterface : public hardware_interface::SystemInterface
 {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(URPositionHardwareInterface);
+  virtual ~URPositionHardwareInterface();
 
   hardware_interface::CallbackReturn on_init(const hardware_interface::HardwareInfo& system_info) final;
 
@@ -95,8 +97,9 @@ public:
 
   std::vector<hardware_interface::CommandInterface> export_command_interfaces() final;
 
+  hardware_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) final;
   hardware_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) final;
-  hardware_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) final;
+  hardware_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) final;
 
   hardware_interface::return_type read(const rclcpp::Time& time, const rclcpp::Duration& period) final;
   hardware_interface::return_type write(const rclcpp::Time& time, const rclcpp::Duration& period) final;
@@ -182,6 +185,8 @@ protected:
   double resend_robot_program_async_success_;
   double zero_ftsensor_cmd_;
   double zero_ftsensor_async_success_;
+  double hand_back_control_cmd_;
+  double hand_back_control_async_success_;
   bool first_pass_;
   bool initialized_;
   double system_interface_initialized_;
@@ -219,6 +224,10 @@ protected:
 
   std::unique_ptr<urcl::UrDriver> ur_driver_;
   std::shared_ptr<std::thread> async_thread_;
+
+  std::atomic_bool rtde_comm_has_been_started_ = false;
+
+  urcl::RobotReceiveTimeout receive_timeout_ = urcl::RobotReceiveTimeout::millisec(20);
 };
 }  // namespace ur_robot_driver
 

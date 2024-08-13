@@ -20,7 +20,7 @@ The arguments for launch files can be listed using ``ros2 launch ur_robot_driver
 The most relevant arguments are the following:
 
 
-* ``ur_type`` (\ *mandatory* ) - a type of used UR robot (\ *ur3*\ , *ur3e*\ , *ur5*\ , *ur5e*\ , *ur10*\ , *ur10e*\ , or *ur16e*\ ).
+* ``ur_type`` (\ *mandatory* ) - a type of used UR robot (\ *ur3*\ , *ur3e*\ , *ur5*\ , *ur5e*\ , *ur10*\ , *ur10e*\ , or *ur16e*\ , *ur20*\ , *ur30*\ ).
 * ``robot_ip`` (\ *mandatory* ) - IP address by which the root can be reached.
 * ``use_fake_hardware`` (default: *false* ) - use simple hardware emulator from ros2_control.
   Useful for testing launch files, descriptions, etc. See explanation below.
@@ -89,7 +89,7 @@ To start it, we've prepared a script:
 
 .. code-block:: bash
 
-   ros2 run ur_robot_driver start_ursim.sh -m <ur_type>
+   ros2 run ur_client_library start_ursim.sh -m <ur_type>
 
 With this, we can spin up a driver using
 
@@ -106,7 +106,7 @@ For details on the Docker image, please see the more detailed guide :ref:`here <
 Example Commands for Testing the Driver
 ---------------------------------------
 
-Allowed UR - Type strings: ``ur3``\ , ``ur3e``\ , ``ur5``\ , ``ur5e``\ , ``ur10``\ , ``ur10e``\ , ``ur16e``.
+Allowed UR - Type strings: ``ur3``\ , ``ur3e``\ , ``ur5``\ , ``ur5e``\ , ``ur10``\ , ``ur10e``\ , ``ur16e``\ , ``ur20``, ``ur30``.
 
 1. Start hardware, simulator or mockup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -189,7 +189,7 @@ To test the driver with the example MoveIt-setup, first start the driver as desc
    ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5e launch_rviz:=true
 
 Now you should be able to use the MoveIt Plugin in rviz2 to plan and execute trajectories with the
-robot as explained `here <https://moveit.picknik.ai/galactic/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html>`_.
+robot as explained `here <https://moveit.picknik.ai/main/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html>`_.
 
 Fake hardware on ROS2 Galactic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -240,3 +240,61 @@ Then start
    ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur5e robot_ip:=yyy.yyy.yyy.yyy use_fake_hardware:=true launch_rviz:=false initial_joint_controller:=joint_trajectory_controller
    # and in another shell
    ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur5e launch_rviz:=true
+
+Custom URScript commands
+------------------------
+
+The driver's package contains a ``urscript_interface`` node that allows sending URScript snippets
+directly to the robot. It gets started in the driver's launchfiles by default. To use it, simply
+publish a message to its interface:
+
+.. code-block:: bash
+
+  # simple popup
+  ros2 topic pub /urscript_interface/script_command std_msgs/msg/String '{data: popup("hello")}' --once
+
+Be aware, that running a program on this interface (meaning publishing script code to that interface) stops any running program on the robot.
+Thus, the motion-interpreting program that is started by the driver gets stopped and has to be
+restarted again. Depending whether you use headless mode or not, you'll have to call the
+``resend_program`` service or press the ``play`` button on the teach panel to start the
+external_control program again.
+
+.. note::
+  Currently, there is no feedback on the code's correctness. If the code sent to the
+  robot is incorrect, it will silently not get executed. Make sure that you send valid URScript code!
+
+Multi-line programs
+^^^^^^^^^^^^^^^^^^^
+
+When you want to define multi-line programs, make sure to check that newlines are correctly
+interpreted from your message. For this purpose the driver prints the program as it is being sent to
+the robot. When sending a multi-line program from the command line, you can use an empty line
+between each statement:
+
+.. code-block:: bash
+
+   ros2 topic pub --once /urscript_interface/script_command std_msgs/msg/String '{data:
+   "def my_prog():
+
+     set_digital_out(1, True)
+
+     movej(p[0.2, 0.3, 0.8, 0, 0, 3.14], a=1.2, v=0.25, r=0)
+
+     textmsg(\"motion finished\")
+
+   end"}'
+
+Non-interrupting programs
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To prevent interrupting the main program, you can send certain commands as `secondary programs
+<https://www.universal-robots.com/articles/ur/programming/secondary-program/>`_.
+
+.. code-block:: bash
+
+   ros2 topic pub --once /urscript_interface/script_command std_msgs/msg/String '{data:
+     "sec my_prog():
+
+       textmsg(\"This is a log message\")
+
+     end"}'
