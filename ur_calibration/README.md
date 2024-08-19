@@ -46,7 +46,7 @@ robot individually, e.g. *ex-ur10-1*.
 ```bash
 $ ros2 launch ur_calibration calibration_correction.launch.py \
 robot_ip:=<robot_ip> \
-target_filename:="$(ros2 pkg prefix <organization_name>_ur_launch)/share/<organization_name>_ur_launch/etc/ex-ur10-1_calibration.yaml"
+target_filename:="$(ros2 pkg tf_prefix <organization_name>_ur_launch)/share/<organization_name>_ur_launch/etc/ex-ur10-1_calibration.yaml"
 ```
 
 To make life easier, we create a launchfile for this particular robot. We base it upon the
@@ -55,7 +55,7 @@ respective launchfile in the driver:
 ```bash
 # Replace your actual colcon_ws folder
 $ cd <colcon_ws>/src/<organization_name>_ur_launch/launch
-$ cp $(ros2 pkg prefix ur_robot_driver)/share/ur_robot_driver/launch/ur_control.launch.py ex-ur10-1.launch.py
+$ cp $(ros2 pkg tf_prefix ur_robot_driver)/share/ur_robot_driver/launch/ur_control.launch.py ex-ur10-1.launch.py
 ```
 
 Next, modify the parameter section of the new launchfile to match your actual calibration:

@@ -2,7 +2,7 @@ gpio_controller:
    tf_prefix: {
     type: string,
     default_value: "",
-    description: "Urdf prefix of the corresponding arm"
+    description: "Urdf tf_prefix of the corresponding arm"
    }
    check_io_successfull_retries: {
       type: int,
