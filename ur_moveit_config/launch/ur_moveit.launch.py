@@ -162,15 +162,37 @@ def launch_setup(context, *args, **kwargs):
     }
 
     # Planning Configuration
+    # ompl_planning_pipeline_config = {
+    #     "move_group": {
+    #         "planning_plugin": "ompl_interface/OMPLPlanner",
+    #         "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
+    #         "start_state_max_bounds_error": 0.1,
+    #     }
+    # }
+    
     ompl_planning_pipeline_config = {
         "move_group": {
             "planning_plugin": "ompl_interface/OMPLPlanner",
-            "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
+            "request_adapters": [
+            "default_planner_request_adapters/ResolveConstraintFrames",
+            "default_planner_request_adapters/ValidateWorkspaceBounds",
+            "default_planner_request_adapters/CheckStartStateBounds",
+            "default_planner_request_adapters/CheckStartStateCollision"
+            ],
             "start_state_max_bounds_error": 0.1,
         }
     }
+
     ompl_planning_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
     ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
+
+    response_adapters = [
+        "default_planning_response_adapters/AddTimeOptimalParameterization",
+        "default_planning_response_adapters/ValidateSolution",
+        "default_planning_response_adapters/DisplayMotionPath",
+    ]
+    ompl_planning_pipeline_config["move_group"]["response_adapters"] = response_adapters
+
 
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
@@ -250,7 +272,7 @@ def launch_setup(context, *args, **kwargs):
     servo_node = Node(
         package="moveit_servo",
         condition=IfCondition(launch_servo),
-        executable="servo_node_main",
+        executable="servo_node",
         parameters=[
             servo_params,
             robot_description,
