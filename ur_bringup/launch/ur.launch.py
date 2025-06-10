@@ -14,6 +14,7 @@ def generate_launch_description():
             "ur_setup",
             description="IP address by which the robot can be reached.",
             choices=[
+                "ur3e",
                 "ur5",
                 "ur5e",
             ],
@@ -40,5 +41,12 @@ def generate_launch_description():
             }.items(),
         condition=IfCondition(PythonExpression(["'", ur_setup, "' == 'ur5e'"])),
     )
-
-    return LaunchDescription(declared_arguments + [ ur5_launch, ur5e_launch])
+    
+    ur3e_launch = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([ThisLaunchFileDir(), "/ur3e.launch.py"]),
+            launch_arguments={
+            
+                }.items(),
+            condition=IfCondition(PythonExpression(["'", ur_setup, "' == 'ur3e'"])),
+        )
+    return LaunchDescription(declared_arguments + [ ur3e_launch, ur5_launch, ur5e_launch])

@@ -41,6 +41,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_ip",
+            default_value="192.168.1.102",
             description="IP address by which the robot can be reached.",
         )
     )
@@ -62,7 +63,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "initial_joint_controller",
-            default_value="scaled_joint_trajectory_controller",
+            default_value="joint_trajectory_controller",
             description="Initially loaded robot controller.",
             choices=[
                 "scaled_joint_trajectory_controller",
@@ -80,13 +81,64 @@ def generate_launch_description():
         )
     )
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_gripper",
+            default_value="false",
+            description="Whether the Robotiq gripper is being used or not.",
+            choices=[
+                "false",
+                "true"
+            ],
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_custom_gripper",
+            default_value="false",
+            description="Whether the Robotiq gripper is being used or not.",
+            choices=[
+                "false",
+                "true"
+            ],
+        )
+    )
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "launch_rviz",
+            default_value="true",
+            description="Launches the Rviz.",
+            choices=[
+                "false",
+                "true"
+            ],
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "is_ur5e_setup",
+            default_value="false",
+            description="Boolean Flag to tell about the robot setup",
+            choices=[
+                "false",
+                "true"
+            ],
+        )
+    )
+
     # Initialize Arguments
     robot_ip = LaunchConfiguration("robot_ip")
     use_fake_hardware = LaunchConfiguration("use_fake_hardware")
     fake_sensor_commands = LaunchConfiguration("fake_sensor_commands")
     initial_joint_controller = LaunchConfiguration("initial_joint_controller")
     activate_joint_controller = LaunchConfiguration("activate_joint_controller")
-
+    use_gripper = LaunchConfiguration("use_gripper")
+    use_custom_gripper = LaunchConfiguration("use_custom_gripper")
+    launch_rviz = LaunchConfiguration("launch_rviz")
+    
     base_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([ThisLaunchFileDir(), "/ur_control.launch.py"]),
         launch_arguments={
@@ -96,6 +148,9 @@ def generate_launch_description():
             "fake_sensor_commands": fake_sensor_commands,
             "initial_joint_controller": initial_joint_controller,
             "activate_joint_controller": activate_joint_controller,
+            "use_gripper": use_gripper,
+            "use_custom_gripper": use_custom_gripper,
+            "launch_rviz": launch_rviz
         }.items(),
     )
 
