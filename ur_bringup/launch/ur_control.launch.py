@@ -73,6 +73,9 @@ def launch_setup(context, *args, **kwargs):
     tool_tcp_port = LaunchConfiguration("tool_tcp_port")
     tool_voltage = LaunchConfiguration("tool_voltage")
     use_gripper = LaunchConfiguration("use_gripper")
+    use_custom_gripper = LaunchConfiguration("use_custom_gripper")
+    is_ur5_setup = LaunchConfiguration("is_ur5_setup")
+    is_ur5e_setup = LaunchConfiguration("is_ur5e_setup")
 
     joint_limit_params = PathJoinSubstitution(
         [FindPackageShare(description_package), "config", ur_type, "joint_limits.yaml"]
@@ -179,6 +182,15 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "use_gripper:=",
             use_gripper,
+            " ",
+            "use_custom_gripper:=",
+            use_custom_gripper,
+            " ",
+            "is_ur5_setup:=",
+            is_ur5_setup,
+            " ",
+            "is_ur5e_setup:=",
+            is_ur5e_setup,
             " ",
         ]
     )
@@ -573,6 +585,27 @@ def generate_launch_description():
             "use_gripper",
             default_value="true",
             description="Start the gripper and the UR.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_custom_gripper",
+            default_value="true",
+            description="Start the gripper and the UR.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "is_ur5_setup",
+            default_value="false",
+            description="Boolean Parameter to tell about the robot_type",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "is_ur5e_setup",
+            default_value="false",
+            description="Boolean Parameter to tell about the robot_type",
         )
     )
 
