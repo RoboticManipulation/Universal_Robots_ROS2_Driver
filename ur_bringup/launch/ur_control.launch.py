@@ -74,6 +74,7 @@ def launch_setup(context, *args, **kwargs):
     tool_voltage = LaunchConfiguration("tool_voltage")
     use_gripper = LaunchConfiguration("use_gripper")
     use_custom_gripper = LaunchConfiguration("use_custom_gripper")
+    use_suction_gripper = LaunchConfiguration("use_suction_gripper")
     is_ur5_setup = LaunchConfiguration("is_ur5_setup")
     is_ur5e_setup = LaunchConfiguration("is_ur5e_setup")
 
@@ -185,6 +186,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "use_custom_gripper:=",
             use_custom_gripper,
+            " ",
+            "use_suction_gripper:=",
+            use_suction_gripper,
             " ",
             "is_ur5_setup:=",
             is_ur5_setup,
@@ -592,6 +596,13 @@ def generate_launch_description():
             "use_custom_gripper",
             default_value="true",
             description="Start the gripper and the UR.",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_suction_gripper",
+            default_value="false",
+            description="Start the suction gripper and the UR.",
         )
     )
     declared_arguments.append(

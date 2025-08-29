@@ -157,9 +157,12 @@ def launch_setup(context, *args, **kwargs):
     )
     robot_description_semantic = {"robot_description_semantic": robot_description_semantic_content}
 
-    robot_description_kinematics = PathJoinSubstitution(
+    robot_description_kinematics_path = PathJoinSubstitution(
         [FindPackageShare(moveit_config_package), "config", "kinematics.yaml"]
     )
+    robot_description_kinematics = {
+        "robot_description_kinematics": load_yaml("ur_moveit_config", "config/kinematics.yaml") or {}
+    }
 
     robot_description_planning = {
         "robot_description_planning": load_yaml(
@@ -191,7 +194,8 @@ def launch_setup(context, *args, **kwargs):
     }
 
     ompl_planning_yaml = load_yaml("ur_moveit_config", "config/ompl_planning.yaml")
-    ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
+    if ompl_planning_yaml:
+        ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
 
     response_adapters = [
         "default_planning_response_adapters/AddTimeOptimalParameterization",
@@ -205,12 +209,12 @@ def launch_setup(context, *args, **kwargs):
     controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
     # the scaled_joint_trajectory_controller does not work on fake hardware
     change_controllers = context.perform_substitution(use_fake_hardware)
-    if change_controllers == "true":
+    if change_controllers == "true" and controllers_yaml:
         controllers_yaml["scaled_joint_trajectory_controller"]["default"] = False
         controllers_yaml["joint_trajectory_controller"]["default"] = True
 
     moveit_controllers = {
-        "moveit_simple_controller_manager": controllers_yaml,
+        "moveit_simple_controller_manager": controllers_yaml or {},
         "moveit_controller_manager": "moveit_simple_controller_manager/MoveItSimpleControllerManager",
     }
 
@@ -242,7 +246,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             robot_description,
             robot_description_semantic,
-            robot_description_kinematics,
+            robot_description_kinematics_path,
             robot_description_planning,
             ompl_planning_pipeline_config,
             trajectory_execution,
@@ -272,7 +276,7 @@ def launch_setup(context, *args, **kwargs):
             robot_description,
             robot_description_semantic,
             ompl_planning_pipeline_config,
-            robot_description_kinematics,
+            robot_description_kinematics_path,
             robot_description_planning,
             warehouse_ros_config,
         ],
@@ -289,13 +293,20 @@ def launch_setup(context, *args, **kwargs):
             servo_params,
             robot_description,
             robot_description_semantic,
-            robot_description_kinematics,
+            robot_description_kinematics_path,
         ],
         output="screen",
     )
 
     
     # Start setting up the required parameters for the moveit_py node 
+    
+    # Planning pipelines configuration for moveit_py
+    planning_pipelines_config = {
+        "planning_pipelines": {
+            "pipeline_names": ["ompl"]
+        }
+    }
    
     ur_ompl_planning_pipeline_config = {
         "ompl": {
@@ -315,7 +326,8 @@ def launch_setup(context, *args, **kwargs):
             # "planner_id": "RRTConnectkConfigDefault"
         }
     }    
-    ur_ompl_planning_pipeline_config["ompl"].update(ompl_planning_yaml)
+    if ompl_planning_yaml:
+        ur_ompl_planning_pipeline_config["ompl"].update(ompl_planning_yaml)
     
 
     # Not tested with CHOMP and Pilz file.
@@ -349,15 +361,17 @@ def launch_setup(context, *args, **kwargs):
     # pilz_cartesian_limits_yaml = load_yaml("ur_moveit_config", "config/pilz_cartesian_limits.yaml")
     # robot_description_planning["robot_description_planning"].update(pilz_cartesian_limits_yaml)
     # moveit_py_yaml["plan_request_params"].update({"planner_id": "RRTConnectkConfigDefault", "planning_time": 5.0, "planning_pipeline": "ompl"})
-    moveit_py_yaml["plan_request_params"].update({"planning_time": 5.0, "planning_pipeline": "ompl"})
+    if moveit_py_yaml and "plan_request_params" in moveit_py_yaml:
+        moveit_py_yaml["plan_request_params"].update({"planning_time": 5.0, "planning_pipeline": "ompl"})
     # To initialize the planning with Pilz comment upper line and uncomment following line:
     # moveit_py_yaml["plan_request_params"].update({"planner_id": "PTP", "planning_time": 1.0, "planning_pipeline": "pilz_industrial_motion_planner"})
 
     moveit_args_not_concatenated = [
-        moveit_py_yaml,
+        moveit_py_yaml or {},
         robot_description,
         robot_description_semantic,
-        {"robot_description_kinematics": load_yaml("ur_moveit_config", "config/ur_kinematics.yaml")},
+        robot_description_kinematics,
+        planning_pipelines_config,
         ur_ompl_planning_pipeline_config,
         # ur_chomp_planning_pipeline_config,
         # ur_pilz_planning_pipeline_config,

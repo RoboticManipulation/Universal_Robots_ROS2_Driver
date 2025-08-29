@@ -119,9 +119,21 @@ def generate_launch_description():
     
     declared_arguments.append(
         DeclareLaunchArgument(
-            "is_ur5e_setup",
-            default_value="false",
+            "is_ur3e_setup",
+            default_value="true",
             description="Boolean Flag to tell about the robot setup",
+            choices=[
+                "false",
+                "true"
+            ],
+        )
+    )
+    
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_suction_gripper",
+            default_value="true",
+            description="Boolean Flag to tell about the suction gripper setup",
             choices=[
                 "false",
                 "true"
@@ -137,6 +149,7 @@ def generate_launch_description():
     activate_joint_controller = LaunchConfiguration("activate_joint_controller")
     use_gripper = LaunchConfiguration("use_gripper")
     use_custom_gripper = LaunchConfiguration("use_custom_gripper")
+    use_suction_gripper = LaunchConfiguration("use_suction_gripper")
     launch_rviz = LaunchConfiguration("launch_rviz")
     
     base_launch = IncludeLaunchDescription(
@@ -150,6 +163,7 @@ def generate_launch_description():
             "activate_joint_controller": activate_joint_controller,
             "use_gripper": use_gripper,
             "use_custom_gripper": use_custom_gripper,
+            "use_suction_gripper": use_suction_gripper,
             "launch_rviz": launch_rviz
         }.items(),
     )
