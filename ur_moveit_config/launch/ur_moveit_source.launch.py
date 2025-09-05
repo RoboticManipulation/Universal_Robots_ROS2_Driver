@@ -544,7 +544,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_suction_gripper",
-            default_value="false",
+            default_value="true",
             description="Start the suction gripper and the UR.",
         )
     )

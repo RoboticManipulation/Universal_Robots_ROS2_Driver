@@ -22,4 +22,11 @@
   <disable_collisions link1="$(arg tf_prefix)robotiq_85_base_link" link2="$(arg tf_prefix)wrist_3_link" reason="Never" />
   </xacro:if>
 
+  <!-- Disable collisions between camera mount and gripper components -->
+  <disable_collisions link1="camera_link" link2="ur3e_inhand_camera_mount" reason="Adjacent" />
+  <disable_collisions link1="ecpmi_gripper_base_link" link2="ecpmi_gripper_tip" reason="Adjacent" />
+  <disable_collisions link1="ecpmi_gripper_base_link" link2="ur3e_inhand_camera_mount" reason="Adjacent" />
+  <disable_collisions link1="ecpmi_gripper_base_link" link2="wrist_3_link" reason="Adjacent" />
+  <disable_collisions link1="ur3e_inhand_camera_mount" link2="wrist_3_link" reason="Adjacent" />
+
 </robot>
