@@ -543,6 +543,13 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
+            "is_ur3e_setup",
+            default_value="true",
+            description="Tells its for UR3e robot",
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
             "use_suction_gripper",
             default_value="true",
             description="Start the suction gripper and the UR.",

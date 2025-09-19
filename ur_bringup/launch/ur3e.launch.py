@@ -108,7 +108,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "launch_rviz",
-            default_value="true",
+            default_value="false",
             description="Launches the Rviz.",
             choices=[
                 "false",
