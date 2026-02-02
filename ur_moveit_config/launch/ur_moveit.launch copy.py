@@ -160,15 +160,6 @@ def launch_setup(context, *args, **kwargs):
             os.path.join("config", str(moveit_joint_limits_file.perform(context))),
         )
     }
-
-    # Planning Configuration
-    # ompl_planning_pipeline_config = {
-    #     "move_group": {
-    #         "planning_plugin": "ompl_interface/OMPLPlanner",
-    #         "request_adapters": """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
-    #         "start_state_max_bounds_error": 0.1,
-    #     }
-    # }
     
     ompl_planning_pipeline_config = {
         "move_group": {
@@ -268,22 +259,21 @@ def launch_setup(context, *args, **kwargs):
     )
 
     # Servo node for realtime control
-    # servo_yaml = load_yaml("ur_moveit_config", "config/ur_servo.yaml")
-    # servo_params = {"moveit_servo": servo_yaml}
-    # servo_node = Node(
-    #     package="moveit_servo",
-    #     condition=IfCondition(launch_servo),
-    #     executable="servo_node",
-    #     parameters=[
-    #         servo_params,
-    #         robot_description,
-    #         robot_description_semantic,
-    #     ],
-    #     output="screen",
-    # )
+    servo_yaml = load_yaml("ur_moveit_config", "config/ur_servo.yaml")
+    servo_params = {"moveit_servo": servo_yaml}
+    servo_node = Node(
+        package="moveit_servo",
+        condition=IfCondition(launch_servo),
+        executable="servo_node",
+        parameters=[
+            servo_params,
+            robot_description,
+            robot_description_semantic,
+        ],
+        output="screen",
+    )
 
-    #nodes_to_start = [move_group_node, rviz_node, servo_node]
-    nodes_to_start = [move_group_node, rviz_node]
+    nodes_to_start = [move_group_node, rviz_node, servo_node]
 
     return nodes_to_start
 
@@ -372,29 +362,7 @@ def generate_launch_description():
             description="Path where the warehouse database should be stored",
         )
     )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "use_sim_time",
-            default_value="false",
-            description="Make MoveIt to use simulation time. This is needed for the trajectory planing in simulation.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "tf_prefix",
-            default_value='""',
-            description="Prefix of the joint names, useful for "
-            "multi-robot setup. If changed than also joint names in the controllers' configuration "
-            "have to be updated.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "use_gripper",
-            default_value="true",
-            description="Start the gripper and the UR.",
-        )
-    )
+
     declared_arguments.append(
         DeclareLaunchArgument("launch_rviz", default_value="true", description="Launch RViz?")
     )

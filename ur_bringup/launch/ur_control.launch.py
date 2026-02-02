@@ -490,7 +490,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "initial_joint_controller",
-            default_value="joint_trajectory_controller",
+            default_value="scaled_joint_trajectory_controller", #joint_trajectory_controller
             description="Initially loaded robot controller.",
         )
     )
@@ -590,7 +590,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_custom_gripper",
-            default_value="true",
+            default_value="false",
             description="Start the gripper and the UR.",
         )
     )

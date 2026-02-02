@@ -41,7 +41,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_ip",
-             default_value="192.168.1.102",
+             default_value="192.168.1.103",
             description="IP address by which the robot can be reached.",
         )
     )
@@ -84,7 +84,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_gripper",
-            default_value="false",
+            default_value="true",
             description="Whether the Robotiq gripper is being used or not.",
             choices=[
                 "false",
@@ -96,7 +96,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "use_custom_gripper",
-            default_value="true",
+            default_value="false",
             description="Whether the Robotiq gripper is being used or not.",
             choices=[
                 "false",
@@ -108,7 +108,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "launch_rviz",
-            default_value="true",
+            default_value="false",
             description="Launches the Rviz.",
             choices=[
                 "false",
