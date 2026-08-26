@@ -61,9 +61,13 @@ class UrToolCommunication(Node):
         cfg_params.append("ignoreeof")
         cfg_params.append("waitslave")
 
+        # retry=999,interval=1 keeps socat retrying the TCP connection every second
+        # until the robot program (External Control URCap) is running and port 54321 opens.
+        tcp_params = ["tcp", robot_ip, str(tcp_port), "retry=999", "interval=1"]
+
         cmd = ["socat"]
         cmd.append(",".join(cfg_params))
-        cmd.append(":".join(["tcp", robot_ip, str(tcp_port)]))
+        cmd.append(":".join(tcp_params[:3]) + "," + ",".join(tcp_params[3:]))
 
         self.get_logger().info("Starting socat with following command:\n" + " ".join(cmd))
         subprocess.call(cmd)

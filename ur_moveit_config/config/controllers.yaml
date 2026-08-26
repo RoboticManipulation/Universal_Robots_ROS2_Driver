@@ -1,7 +1,9 @@
 controller_names:
   - scaled_joint_trajectory_controller
   - joint_trajectory_controller
-  - robotiq_gripper_controller
+  # Legacy ros2_control gripper controller; uncomment when switching back.
+  # - robotiq_gripper_controller
+  - robotiq_2f_urcap_adapter
 
 
 
@@ -30,9 +32,15 @@ joint_trajectory_controller:
     - wrist_2_joint
     - wrist_3_joint
     
-robotiq_gripper_controller:
-    action_ns: gripper_cmd
+# Legacy ros2_control gripper controller:
+# robotiq_gripper_controller:
+#     action_ns: gripper_cmd
+
+# URCap adapter (robotiq_2f_urcap_adapter node)
+robotiq_2f_urcap_adapter:
+    action_ns: gripper_command
     type: GripperCommand
+    max_effort: 140.0
     default: false
     joints:
       - robotiq_85_left_knuckle_joint

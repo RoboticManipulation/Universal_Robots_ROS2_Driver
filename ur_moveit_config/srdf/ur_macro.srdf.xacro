@@ -4,6 +4,26 @@
     This is a format for representing semantic information about the robot structure.
     A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
 -->
+  <!-- Emit the same six-axis named state for both arm planning groups. -->
+  <xacro:macro name="ur_dual_arm_group_state" params="state manipulator_group arm_gripper_group tf_prefix shoulder_pan shoulder_lift elbow wrist_1 wrist_2 wrist_3">
+    <group_state name="${tf_prefix}${state}" group="${manipulator_group}">
+      <joint name="${tf_prefix}shoulder_pan_joint" value="${shoulder_pan}" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="${shoulder_lift}" />
+      <joint name="${tf_prefix}elbow_joint" value="${elbow}" />
+      <joint name="${tf_prefix}wrist_1_joint" value="${wrist_1}" />
+      <joint name="${tf_prefix}wrist_2_joint" value="${wrist_2}" />
+      <joint name="${tf_prefix}wrist_3_joint" value="${wrist_3}" />
+    </group_state>
+    <group_state name="${tf_prefix}${state}" group="${arm_gripper_group}">
+      <joint name="${tf_prefix}shoulder_pan_joint" value="${shoulder_pan}" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="${shoulder_lift}" />
+      <joint name="${tf_prefix}elbow_joint" value="${elbow}" />
+      <joint name="${tf_prefix}wrist_1_joint" value="${wrist_1}" />
+      <joint name="${tf_prefix}wrist_2_joint" value="${wrist_2}" />
+      <joint name="${tf_prefix}wrist_3_joint" value="${wrist_3}" />
+    </group_state>
+  </xacro:macro>
+
   <xacro:macro name="ur_srdf" params="name tf_prefix use_gripper">
     <!--GROUPS - Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
     <!--LINKS - When a link is specified, the parent joint of that link (if it exists) is automatically included-->
@@ -35,6 +55,74 @@
  
 
     <!--GROUP STATES - Purpose - Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
+
+    <!-- Placement viewpoints. These are available for both ur_manipulator and arm_gripper. -->
+    <xacro:ur_dual_arm_group_state
+      state="home_1"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="0" shoulder_lift="-1.57" elbow="0"
+      wrist_1="0" wrist_2="0" wrist_3="0" />
+
+    <!-- RViz values: [271, -20, -10, -150, 90, 270] degrees. -->
+    <xacro:ur_dual_arm_group_state
+      state="real_place_view_mod_0"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="4.7298422729046328" shoulder_lift="-0.3490658503988659" elbow="-0.1745329251994329"
+      wrist_1="-2.6179938779914944" wrist_2="1.5707963267948966" wrist_3="4.7123889803846897" />
+
+    <xacro:ur_dual_arm_group_state
+      state="pick_view_mod_0"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-1.4835298641951802" shoulder_lift="-1.8151424220741028" elbow="2.4609142453120043"
+      wrist_1="-1.7453292519943295" wrist_2="-0.5759586531581288" wrist_3="0.9773843811168246" />
+
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_0"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="4.735161070830742" shoulder_lift="-0.3478864846489471" elbow="-0.1779148056823752"
+      wrist_1="-2.6152769185976763" wrist_2="1.3776063761265398" wrist_3="4.708057591134439" />
+
+    <!-- Upper left -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_1"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-1.0316815603006488" shoulder_lift="-1.4601166938752805" elbow="0.5894637525835345"
+      wrist_1="1.036263754536651" wrist_2="-1.0378726432112155" wrist_3="-0.08471574816055237" />
+
+    <!-- Upper right -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_1_1"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-0.44326554356741227" shoulder_lift="-1.0860093276974347" elbow="0.3138458808708348"
+      wrist_1="1.1170431159477647" wrist_2="-0.6849358097867181" wrist_3="-0.2712206664642463" />
+
+    <!-- Middle right -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_2_1"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-0.4707708192685345" shoulder_lift="-1.439632072488406" elbow="1.254610779634521"
+      wrist_1="0.08102328581293852" wrist_2="-0.6856061272349351" wrist_3="0.08082911245607818" />
+
+    <!-- Middle left -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_2"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-1.026292842161412" shoulder_lift="-1.8203418372776345" elbow="1.7428443011251626"
+      wrist_1="0.07760378813855963" wrist_2="-1.0264917979093338" wrist_3="0.0" />
+
+    <!-- Lower left -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_3"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-1.0296471811601189" shoulder_lift="-1.3741785655159537" elbow="2.360149656440772"
+      wrist_1="-0.98585330982068" wrist_2="-1.0296041347611935" wrist_3="0.0" />
+
+    <!-- Lower right -->
+    <xacro:ur_dual_arm_group_state
+      state="place_view_mod_3_1"
+      manipulator_group="${tf_prefix}${name}_manipulator" arm_gripper_group="${tf_prefix}arm_gripper" tf_prefix="${tf_prefix}"
+      shoulder_pan="-0.6253353904821932" shoulder_lift="-1.1190978752391079" elbow="1.7928318442960054"
+      wrist_1="-0.7625120749202076" wrist_2="-0.8393739937620538" wrist_3="0.05934436521201574" />
     
     <group_state name="${tf_prefix}home" group="${tf_prefix}${name}_manipulator">
       <joint name="${tf_prefix}elbow_joint" value="0" />
@@ -99,6 +187,46 @@
       <joint name="${tf_prefix}wrist_1_joint" value="-1.54" />
       <joint name="${tf_prefix}wrist_2_joint" value="-1.61" />
       <joint name="${tf_prefix}wrist_3_joint" value="0.26" />
+    </group_state>
+    <group_state name="${tf_prefix}place_geosem_2" group="${tf_prefix}${name}_manipulator">
+      <joint name="${tf_prefix}elbow_joint" value="2.5665834585772913" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="-2.076041360894674" />
+      <joint name="${tf_prefix}shoulder_pan_joint" value="1.6742222309112549" />
+      <joint name="${tf_prefix}wrist_1_joint" value="-3.551495214501852" />
+      <joint name="${tf_prefix}wrist_2_joint" value="-1.8365276495562952" />
+      <joint name="${tf_prefix}wrist_3_joint" value="-3.206636969243185" />
+    </group_state>
+    <group_state name="${tf_prefix}place_geosem_3" group="${tf_prefix}${name}_manipulator">
+      <joint name="${tf_prefix}elbow_joint" value="2.451265875493185" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="-2.589476247827047" />
+      <joint name="${tf_prefix}shoulder_pan_joint" value="-0.036626640950338185" />
+      <joint name="${tf_prefix}wrist_1_joint" value="-1.2091534596732636" />
+      <joint name="${tf_prefix}wrist_2_joint" value="-0.7296860853778284" />
+      <joint name="${tf_prefix}wrist_3_joint" value="-4.983092133198873" />
+    </group_state>
+    <group_state name="${tf_prefix}place_geosem_1" group="${tf_prefix}${name}_manipulator">
+      <joint name="${tf_prefix}elbow_joint" value="1.7414253393756312" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="-2.3060275516905726" />
+      <joint name="${tf_prefix}shoulder_pan_joint" value="1.8009765148162842" />
+      <joint name="${tf_prefix}wrist_1_joint" value="-2.5631729565062464" />
+      <joint name="${tf_prefix}wrist_2_joint" value="-1.8589237372027796" />
+      <joint name="${tf_prefix}wrist_3_joint" value="-3.182661835347311" />
+    </group_state>
+    <group_state name="${tf_prefix}place_geosem_full_shelve" group="${tf_prefix}${name}_manipulator">
+      <joint name="${tf_prefix}elbow_joint" value="1.3079827467547815" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="-3.068388601342672" />
+      <joint name="${tf_prefix}shoulder_pan_joint" value="1.8022667169570923" />
+      <joint name="${tf_prefix}wrist_1_joint" value="-1.1725776952556153" />
+      <joint name="${tf_prefix}wrist_2_joint" value="-1.80662709871401" />
+      <joint name="${tf_prefix}wrist_3_joint" value="-3.105856959019796" />
+    </group_state>
+    <group_state name="${tf_prefix}grasp_geosem_1" group="${tf_prefix}${name}_manipulator">
+      <joint name="${tf_prefix}elbow_joint" value="2.7656849066363733" />
+      <joint name="${tf_prefix}shoulder_lift_joint" value="-2.921538015405172" />
+      <joint name="${tf_prefix}shoulder_pan_joint" value="-0.2895596663104456" />
+      <joint name="${tf_prefix}wrist_1_joint" value="-2.140449663201803" />
+      <joint name="${tf_prefix}wrist_2_joint" value="-1.4375460783587855" />
+      <joint name="${tf_prefix}wrist_3_joint" value="-3.393365446721212" />
     </group_state>
     <!--END EFFECTOR - Purpose - Represent information about an end effector.-->
     <!--VIRTUAL JOINT - Purpose - this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
